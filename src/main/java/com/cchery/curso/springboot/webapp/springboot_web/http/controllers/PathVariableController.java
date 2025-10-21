@@ -1,8 +1,12 @@
 package com.cchery.curso.springboot.webapp.springboot_web.http.controllers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +20,30 @@ import com.cchery.curso.springboot.webapp.springboot_web.models.dto.ParamDto;
 @RestController
 @RequestMapping("/api/var")
 public class PathVariableController {
+    @Value("${config.username}")
+    private String username;
+
+    // @Value("${config.message}")
+    // private String message;
+
+    @Value("${config.listOfValues}")
+    private String[] listOfValues;
+
+    @Value("${config.code}")
+    private Integer code;
+
+    @Value("#{ '${config.listOfValues}'.split(',') }")
+    private List<String> valueList;
+
+    @Value("#{ '${config.listOfValues}' }")
+    private String valueString;
+
+    @Value("#{ ${config.valuesMap} }")
+    private Map<String, Object> valuesMap;
+
+    @Autowired()
+    private Environment environment;
+
     @GetMapping("/baz/{message}")
     public ParamDto baz(@PathVariable String message){
         ParamDto param = new ParamDto();
@@ -33,6 +61,22 @@ public class PathVariableController {
 
     @PostMapping("/create")
     public User create(@RequestBody User user){
+        user.setName(user.getName().toUpperCase());
         return user;
+    }
+
+    @GetMapping("/values")
+    public Map<String, Object> values(@Value("${config.message}") String message){
+        Map<String, Object> json = new HashMap<>();
+        json.put("username", username);
+        json.put("code", code);
+        json.put("code2", environment.getProperty("config.code", Integer.class));
+        json.put("message", message);
+        json.put("message2", environment.getProperty("config.message"));
+        json.put("listOfValues", listOfValues);
+        json.put("valueList", valueList);
+        json.put("valueString", valueString);
+        json.put("valuesMap", valuesMap);
+        return json;
     }
 }
